@@ -1,9 +1,11 @@
 # EZARR
+
 [![Check running](https://github.com/Luctia/ezarr/actions/workflows/check_running.yml/badge.svg)](https://github.com/Luctia/ezarr/actions/workflows/check_running.yml)
 
 Ezarr is a project built to make it EZ to deploy a Servarr mediacenter on an Ubuntu server. The
 badge above means that the shell script and docker-compose file in this repository at least *don't
 crash*. It doesn't necessarily mean it will run well on your system ;) It features:
+
 - [Sonarr](https://sonarr.tv/) is an application to manage TV shows. It is capable of keeping track
   of what you'd like to watch, at what quality, in which language and more, and can find a place to
   download this if connected to Prowlarr and qBittorrent. It can also reorganize the media you
@@ -21,7 +23,6 @@ crash*. It doesn't necessarily mean it will run well on your system ;) It featur
   where to download this. **Note**: when adding an indexer, please do not set the "seed ratio" to
   less than 1. Less than 1 means that you upload less than you download. Not only is this
   unfriendly towards your fellow users, but it can also get you banned from certain indexers.
-- [Jackett](https://github.com/Jackett/Jackett) is an alternative to Prowlarr. 
 - [qBittorrent](https://www.qbittorrent.org/) can download torrents and provides a bunch more
   features for management.
 - [PleX](https://www.plex.tv/) is a mediaserver. Using this, you get access to a Netflix-like
@@ -35,12 +36,15 @@ crash*. It doesn't necessarily mean it will run well on your system ;) It featur
    tool.
 
 ## Using
+
 ### Using the CLI
+
 To make things easier, a CLI has been developed. First, clone the repository in a directory of your
 choosing. You can run it by entering `python main.py` and the CLI will guide you through the
 process. Please take a look at [important notes](#important-notes) before you continue.
 
 ### Manually
+
 1. To get started, clone the repository in a directory of your choosing. **Note: this will be where
    your installation and media will be as well, so think about this a bit.**
 2. Copy `.env.sample` to a real `.env` by running `$ cp .env.sample .env`.
@@ -57,6 +61,7 @@ That's it! Your containers are now up and you can continue to set up the setting
 take a look at [important notes](#important-notes) before you continue.
 
 ## Important notes
+
 - When linking one service to another, remember to use the container name instead of `localhost`.
 - Please set the settings of the -arr containers as soon as possible to the following (use
   advanced):
@@ -75,6 +80,7 @@ take a look at [important notes](#important-notes) before you continue.
 ## FAQ
 
 ### Why do I need to set some settings myself, can that be added?
+
 Some settings, particularly for the Servarr suite, are set in databases. While it *might* be
 possible to interact with this database after creation, I'd rather not touch these. It's not
 that difficult to set them yourself, and quite difficult to do it automatically. For other
