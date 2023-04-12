@@ -173,10 +173,8 @@ services:
         - PGID=13000
         - TZ=Australia/Melbourne
       volumes:
-        - /config/bazarr-config:/config # config files
-        - /data/media/movies:/movies # movies folder
-        - /data/media/tv:/tv # tv shows folder
-        - /data/media/anime:/anime # anime folder
+        - /config/bazarr-config:/config 
+        - /data:/data
       ports:
         - "6767:6767"
       restart: unless-stopped
