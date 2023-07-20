@@ -7,21 +7,37 @@ services:
   #   cap_add:
   #     - NET_ADMIN
   #   ports:
-  #     - 8888:8888/tcp # HTTP proxy
-  #     - 8388:8388/tcp # Shadowsocks
-  #     - 8388:8388/udp # Shadowsocks
-  #   volumes:
-  #     - /config/gluetun-config:/gluetun
+      # qBitorrent
+      # - "8080:8080"
+      # - "6881:6881"
+      # - "6881:6881/udp"
+      # # overseerr
+      # - "5055:5055"
+      # # readarr
+      # - 13378:80
+    # volumes:
+    #   - /config/gluetun-config:/gluetun
+    # environment:
+    #   # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
+    #   - VPN_SERVICE_PROVIDER=
+    #   - VPN_TYPE=
+    #   - TZ=Australia/Melbourne
+    #   - PUID=${UID}
+    #   - PGID=13000
+
+  # plex:
+  #   image: lscr.io/linuxserver/plex:latest
+  #   container_name: plex
+  #   network_mode: host
   #   environment:
-  #     # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
-  #     - VPN_SERVICE_PROVIDER=mullvad
-  #     - VPN_TYPE=wireguard
-  #     - WIREGUARD_PRIVATE_KEY=yGC6NypWA7JdPBhqXOSUs87ig/pYJLkHGr1AdoIxSVw=
-  #     - WIREGUARD_ADDRESSES=10.66.60.253/32,fc00:bbbb:bbbb:bb01::3:3cfc/128
-  #     - TZ=Australia/Melbourne
-  #     # Server list updater
-  #     # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
-  #     # - UPDATER_PERIOD=
+  #     - PUID=${UID}
+  #     - PGID=13000
+  #     - VERSION=docker
+  #     - PLEX_CLAIM=claim-txx7Xs48q8dVznVjzFRt
+  #   volumes:
+  #     - /config/plex-config:/config
+  #     - /data/media:/media
+  #   restart: unless-stopped
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -53,9 +69,9 @@ services:
       - "7878:7878"
     restart: unless-stopped
 
-  readarr:
+  readarr-ebooks:
     image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr
+    container_name: readarr_ebooks
     environment:
       - PUID=13004
       - PGID=13000
@@ -68,19 +84,19 @@ services:
       - "8787:8787"
     restart: unless-stopped
 
-  overseerr:
-    image: sctx/overseerr:latest
-    container_name: overseerr
-    # network_mode: "service:gluetun"
+  readarr-audiobooks:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr_audiobooks
     environment:
-      - PUID=13009
+      - PUID=13005
       - PGID=13000
       - UMASK=002
       - TZ=Australia/Melbourne
     volumes:
-      - /config/overseerr-config:/app/config
+      - /config/readarr-audiobooks-config:/config
+      - /data:/data
     ports:
-      - "5055:5055"
+      - "8788:8787"
     restart: unless-stopped
 
   prowlarr:
@@ -95,35 +111,6 @@ services:
       - /config/prowlarr-config:/config
     ports:
       - "9696:9696"
-    restart: unless-stopped
-
-  # plex:
-  #   image: lscr.io/linuxserver/plex:latest
-  #   container_name: plex
-  #   network_mode: host
-  #   environment:
-  #     - PUID=${UID}
-  #     - PGID=13000
-  #     - VERSION=docker
-  #     - PLEX_CLAIM=claim-txx7Xs48q8dVznVjzFRt
-  #   volumes:
-  #     - /config/plex-config:/config
-  #     - /data/media:/media
-  #   restart: unless-stopped
-
-  tautulli:
-    image: lscr.io/linuxserver/tautulli:latest
-    container_name: tautulli
-    # depends_on:
-    # - plex
-    environment:
-      - PUID=${UID}
-      - PGID=13000
-      - TZ=Australia/Melbourne
-    volumes:
-      - /config/tautulli-config:/config
-    ports:
-      - "8181:8181"
     restart: unless-stopped
 
   qbittorrent:
@@ -144,6 +131,36 @@ services:
       - "8080:8080"
       - "6881:6881"
       - "6881:6881/udp"
+    restart: unless-stopped
+
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    # depends_on:
+    # - plex
+    environment:
+      - PUID=13008
+      - PGID=13000
+      - TZ=Australia/Melbourne
+    volumes:
+      - /config/tautulli-config:/config
+    ports:
+      - "8181:8181"
+    restart: unless-stopped 
+
+  overseerr:
+    image: sctx/overseerr:latest
+    container_name: overseerr
+    # network_mode: "service:gluetun"
+    environment:
+      - PUID=13009
+      - PGID=13000
+      - UMASK=002
+      - TZ=Australia/Melbourne
+    volumes:
+      - /config/overseerr-config:/app/config
+    ports:
+      - "5055:5055"
     restart: unless-stopped
 
   bazarr:
