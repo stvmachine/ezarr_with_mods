@@ -1,6 +1,28 @@
 ---
 version: "3.1"
 services:
+  # gluetun:
+  #   image: qmcgaw/gluetun
+  #   container_name: gluetun
+  #   cap_add:
+  #     - NET_ADMIN
+  #   ports:
+  #     - 8888:8888/tcp # HTTP proxy
+  #     - 8388:8388/tcp # Shadowsocks
+  #     - 8388:8388/udp # Shadowsocks
+  #   volumes:
+  #     - /config/gluetun-config:/gluetun
+  #   environment:
+  #     # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
+  #     - VPN_SERVICE_PROVIDER=mullvad
+  #     - VPN_TYPE=wireguard
+  #     - WIREGUARD_PRIVATE_KEY=yGC6NypWA7JdPBhqXOSUs87ig/pYJLkHGr1AdoIxSVw=
+  #     - WIREGUARD_ADDRESSES=10.66.60.253/32,fc00:bbbb:bbbb:bb01::3:3cfc/128
+  #     - TZ=Australia/Melbourne
+  #     # Server list updater
+  #     # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
+  #     # - UPDATER_PERIOD=
+
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
@@ -49,6 +71,7 @@ services:
   overseerr:
     image: sctx/overseerr:latest
     container_name: overseerr
+    # network_mode: "service:gluetun"
     environment:
       - PUID=13009
       - PGID=13000
@@ -92,7 +115,7 @@ services:
     image: lscr.io/linuxserver/tautulli:latest
     container_name: tautulli
     # depends_on:
-      # - plex
+    # - plex
     environment:
       - PUID=${UID}
       - PGID=13000
@@ -106,6 +129,7 @@ services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    # network_mode: "service:gluetun"
     environment:
       - PUID=13007
       - PGID=13000
@@ -115,6 +139,7 @@ services:
     volumes:
       - /config/qbittorrent-config:/config
       - /data/torrents:/data/torrents
+      - /data:/data
     ports:
       - "8080:8080"
       - "6881:6881"
@@ -122,20 +147,20 @@ services:
     restart: unless-stopped
 
   bazarr:
-      image: lscr.io/linuxserver/bazarr:latest
-      container_name: bazarr
-      environment:
-        # - DOCKER_MODS=wayller/bazarr-mod-subsync:latest
-        - PUID=13010
-        - PGID=13000
-        - TZ=Australia/Melbourne
-      volumes:
-        - /config/bazarr-config:/config 
-        - /data:/data
-      ports:
-        - "6767:6767"
-      restart: unless-stopped
-  
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      # - DOCKER_MODS=wayller/bazarr-mod-subsync:latest
+      - PUID=13010
+      - PGID=13000
+      - TZ=Australia/Melbourne
+    volumes:
+      - /config/bazarr-config:/config
+      - /data:/data
+    ports:
+      - "6767:6767"
+    restart: unless-stopped
+
   tdarr:
     container_name: tdarr
     image: ghcr.io/haveagitgat/tdarr:latest
@@ -211,3 +236,19 @@ services:
       - /config/ersatztv-config:/root/.local/share/ersatztv
       - /data:/data:ro
 
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    # network_mode: "service:gluetun"
+    restart: unless-stopped
+    environment:
+      - TZ=Australia/Melbourne
+      - PUID=13016
+      - PGID=13000
+    ports:
+      - 13378:80
+    volumes:
+      - /data/audiobooks:/audiobooks
+      - /data/podcasts:/podcasts
+      - /config/audiobookshelf-config:/config
+      - /data/metadata:/metadata
