@@ -1,52 +1,109 @@
 ---
 version: "3.1"
 services:
-  # gluetun:
-  #   image: qmcgaw/gluetun
-  #   container_name: gluetun
-  #   cap_add:
-  #     - NET_ADMIN
-  #   ports:
-      # qBitorrent
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - '50080:80'
+      - '50081:81'
+      - '50443:443'
+    volumes:
+      - /data:/data
+      - /config/nginx-config/letsencrypt:/etc/letsencrypt
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_NGINX}
+      - PGID=${PGID}
+
+  gluetun:
+    # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
+    image: ghcr.io/qdm12/gluetun:latest
+    container_name: gluetun
+    # line above must be uncommented to allow external containers to connect. See https://github.com/qdm12/gluetun/wiki/Connect-a-container-to-gluetun#external-container-to-gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - /config/gluetun-config:/gluetun
+    environment:
+      # See https://github.com/qdm12/gluetun/wiki
+      ## ProtonVPN Wireguard
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+      - VPN_ENDPOINT_IP=${VPN_ENDPOINT_IP}
+      - VPN_ENDPOINT_PORT=${VPN_ENDPOINT_PORT}
+      - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_GLUETUN}
+      - PGID=${PGID}
+    ports:
+      - 8080:8080/tcp # qBittorrent
+    # networks:
+    #   gluetun-network:
+    #     ipv4_address: 172.16.0.10
+
+  qbittorrent:
+    #  https://docs.linuxserver.io/images/docker-qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID_QBITTORRENT}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - UMASK=002
+      - WEBUI_PORT=8080
+    volumes:
+      - /config/qbittorrent-config:/config
+      - /data/torrents:/data/torrents
+      - /data:/data
+    # ports:
+      #  Cannot be exposed if using network_mode  
       # - "8080:8080"
       # - "6881:6881"
       # - "6881:6881/udp"
-      # # overseerr
-      # - "5055:5055"
-      # # readarr
-      # - 13378:80
-    # volumes:
-    #   - /config/gluetun-config:/gluetun
-    # environment:
-    #   # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
-    #   - VPN_SERVICE_PROVIDER=
-    #   - VPN_TYPE=
-    #   - TZ=Australia/Melbourne
-    #   - PUID=${UID}
-    #   - PGID=13000
+    restart: unless-stopped
 
-  # plex:
-  #   image: lscr.io/linuxserver/plex:latest
-  #   container_name: plex
-  #   network_mode: host
-  #   environment:
-  #     - PUID=${UID}
-  #     - PGID=13000
-  #     - VERSION=docker
-  #     - PLEX_CLAIM=claim-txx7Xs48q8dVznVjzFRt
-  #   volumes:
-  #     - /config/plex-config:/config
-  #     - /data/media:/media
-  #   restart: unless-stopped
+  qbittorrent-natmap:
+    # https://github.com/soxfor/qbittorrent-natmap
+    image: ghcr.io/soxfor/qbittorrent-natmap:latest
+    container_name: qbittorrent-natmap
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /config/qbittorrent-natmap-config:/config
+      - /config/qbittorrent-natmap-config/certs:/etc/ssl/certs
+    # command: ["/bin/bash", "-c", "/config/qbittorrent-natmap-script.sh"]
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID_QBITTORRENT_NATMAP}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - QBITTORRENT_SERVER=localhost
+      - QBITTORRENT_PORT=8080
+      - QBITTORRENT_USER=admin
+      - QBITTORRENT_PASS=adminadmin
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      gluetun:
+        condition: service_healthy
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     environment:
-      - PUID=13001
-      - PGID=13000
+      - PUID=${PUID_SONARR}
+      - PGID=${PGID}
       - UMASK=002
-      - TZ=Australia/Melbourne
+      - TZ=${TIMEZONE}
     volumes:
       - /config/sonarr-config:/config
       - /data:/data
@@ -58,10 +115,10 @@ services:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     environment:
-      - PUID=13002
-      - PGID=13000
+      - PUID=${PUID_RADARR}
+      - PGID=${PGID}
       - UMASK=002
-      - TZ=Australia/Melbourne
+      - TZ=${TIMEZONE}
     volumes:
       - /config/radarr-config:/config
       - /data:/data
@@ -73,10 +130,10 @@ services:
     image: lscr.io/linuxserver/readarr:develop
     container_name: readarr_ebooks
     environment:
-      - PUID=13004
-      - PGID=13000
+      - PUID=${PUID_READARR}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
       - UMASK=002
-      - TZ=Australia/Melbourne
     volumes:
       - /config/readarr-config:/config
       - /data:/data
@@ -88,10 +145,10 @@ services:
     image: lscr.io/linuxserver/readarr:develop
     container_name: readarr_audiobooks
     environment:
-      - PUID=13005
-      - PGID=13000
+      - PUID=${PUID_READARR_AUDIOBOOKS}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
       - UMASK=002
-      - TZ=Australia/Melbourne
     volumes:
       - /config/readarr-audiobooks-config:/config
       - /data:/data
@@ -103,34 +160,14 @@ services:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     environment:
-      - PUID=13006
-      - PGID=13000
+      - PUID=${PUID_PROWLARR}
+      - PGID=${PGID}
       - UMASK=002
-      - TZ=Australia/Melbourne
+      - TZ=${TIMEZONE}
     volumes:
       - /config/prowlarr-config:/config
     ports:
       - "9696:9696"
-    restart: unless-stopped
-
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
-    # network_mode: "service:gluetun"
-    environment:
-      - PUID=13007
-      - PGID=13000
-      - UMASK=002
-      - TZ=Australia/Melbourne
-      - WEBUI_PORT=8080
-    volumes:
-      - /config/qbittorrent-config:/config
-      - /data/torrents:/data/torrents
-      - /data:/data
-    ports:
-      - "8080:8080"
-      - "6881:6881"
-      - "6881:6881/udp"
     restart: unless-stopped
 
   tautulli:
@@ -139,9 +176,9 @@ services:
     # depends_on:
     # - plex
     environment:
-      - PUID=13008
-      - PGID=13000
-      - TZ=Australia/Melbourne
+      - PUID=${PUID_TAUTULLI}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
     volumes:
       - /config/tautulli-config:/config
     ports:
@@ -151,12 +188,11 @@ services:
   overseerr:
     image: sctx/overseerr:latest
     container_name: overseerr
-    # network_mode: "service:gluetun"
     environment:
-      - PUID=13009
-      - PGID=13000
+      - PUID=${PUID_OVERSEERR}
+      - PGID=${PGID}
       - UMASK=002
-      - TZ=Australia/Melbourne
+      - TZ=${TIMEZONE}
     volumes:
       - /config/overseerr-config:/app/config
     ports:
@@ -167,10 +203,11 @@ services:
     image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr
     environment:
+      # TODO: The following mod allows to use subsync that improves the quality of sub synchronization
       # - DOCKER_MODS=wayller/bazarr-mod-subsync:latest
-      - PUID=13010
-      - PGID=13000
-      - TZ=Australia/Melbourne
+      - PUID=${PUID_BAZARR}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
     volumes:
       - /config/bazarr-config:/config
       - /data:/data
@@ -188,9 +225,9 @@ services:
       - 8266:8266 # server port
       - 8267:8267 # Internal node port
     environment:
-      - TZ=Australia/Melbourne
-      - PUID=13011
-      - PGID=13000
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_TDARR}
+      - PGID=${PGID}
       - UMASK_SET=002
       - serverIP=0.0.0.0
       - serverPort=8266
@@ -211,9 +248,9 @@ services:
     restart: unless-stopped
     network_mode: service:tdarr
     environment:
-      - TZ=Australia/Melbourne
-      - PUID=13012
-      - PGID=13000
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_TDARR_NODE}
+      - PGID=${PGID}
       - UMASK_SET=002
       - nodeName=MainNode
       - serverIP=0.0.0.0
@@ -225,28 +262,14 @@ services:
       - /data/media:/media
       - /transcode_cache:/temp
 
-  # nzbget:
-  #   container_name: nzbget
-  #   image: lscr.io/linuxserver/nzbget:latest
-  #   restart: unless-stopped
-  #   ports:
-  #     - 6789:6789
-  #   environment:
-  #     - TZ=Australia/Melbourne
-  #     - PUID= 13013
-  #     - PGID= 13000
-  #   volumes:
-  #     - /config/nzbget-config:/config
-  #     - /data/torrents:/data/torrents
-
   ersatztv:
     container_name: ersatztv
     image: jasongdove/ersatztv:latest-arm64
     restart: unless-stopped
     environment:
-      - TZ=Australia/Melbourne
-      - PUID=13015
-      - PGID=13000
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_ERSATZTV}
+      - PGID=${PGID}
     ports:
       - "8409:8409/tcp"
     volumes:
@@ -256,12 +279,11 @@ services:
   audiobookshelf:
     container_name: audiobookshelf
     image: ghcr.io/advplyr/audiobookshelf:latest
-    # network_mode: "service:gluetun"
     restart: unless-stopped
     environment:
-      - TZ=Australia/Melbourne
-      - PUID=13016
-      - PGID=13000
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_AUDIOBOOKSHELF}
+      - PGID=${PGID}
     ports:
       - 13378:80
     volumes:
