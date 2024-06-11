@@ -1,25 +1,25 @@
 ---
 version: "3.1"
 services:
-  nginx:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx
-    restart: unless-stopped
-    ports:
-      - '50080:80'
-      - '50081:81'
-      - '50443:443'
-    volumes:
-      - /data:/data
-      - /config/nginx-config/letsencrypt:/etc/letsencrypt
-    environment:
-      - TZ=${TIMEZONE}
-      - PUID=${PUID_NGINX}
-      - PGID=${PGID}
+  # nginx:
+  #   image: 'jc21/nginx-proxy-manager:latest'
+  #   container_name: nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - '50080:80'
+  #     - '50081:81'
+  #     - '50443:443'
+  #   volumes:
+  #     - /data:/data
+  #     - /config/nginx-config/letsencrypt:/etc/letsencrypt
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #     - PUID=${PUID_NGINX}
+  #     - PGID=${PGID}
 
   gluetun:
     # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
-    image: ghcr.io/qdm12/gluetun:latest
+    image: ghcr.io/qdm12/gluetun:v3
     container_name: gluetun
     # line above must be uncommented to allow external containers to connect. See https://github.com/qdm12/gluetun/wiki/Connect-a-container-to-gluetun#external-container-to-gluetun
     restart: unless-stopped
@@ -27,11 +27,15 @@ services:
       - NET_ADMIN
     volumes:
       - /config/gluetun-config:/gluetun
+      - /config/tmp/gluetun:/tmp/gluetun
     environment:
       # See https://github.com/qdm12/gluetun/wiki
       ## ProtonVPN Wireguard
+      - UPDATER_PERIOD=24h
       - VPN_SERVICE_PROVIDER=custom
       - VPN_TYPE=wireguard
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_PROVIDER=protonvpn
       - VPN_ENDPOINT_IP=${VPN_ENDPOINT_IP}
       - VPN_ENDPOINT_PORT=${VPN_ENDPOINT_PORT}
       - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY}
@@ -291,3 +295,27 @@ services:
       - /data/podcasts:/podcasts
       - /config/audiobookshelf-config:/config
       - /data/metadata:/metadata
+
+  # epicgames-freegames:
+  #   container_name: epicgames-freegames
+  #   image: charlocharlie/epicgames-freegames:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #     - PUID=${PUID_EPICGAMES}
+  #     - PGID=${PGID}
+  #   ports:
+  #     - 8500:3000
+  #   shm_size: '2g'
+  #   volumes:
+  #     - /config/epicgames-config/:/usr/app/config
+    
+  # recyclarr:
+  #   container_name: recyclarr
+  #   image: ghcr.io/recyclarr/recyclarr
+  #   volumes:
+  #     - /config/recyclarr-config:/config
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #     - PUID=${PUID_RECYCLARR}
+  #     - PGID=${PGID}
