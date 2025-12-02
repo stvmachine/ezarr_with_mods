@@ -1,22 +1,5 @@
 ---
-version: "3.1"
 services:
-  # nginx:
-  #   image: 'jc21/nginx-proxy-manager:latest'
-  #   container_name: nginx
-  #   restart: unless-stopped
-  #   ports:
-  #     - '50080:80'
-  #     - '50081:81'
-  #     - '50443:443'
-  #   volumes:
-  #     - /data:/data
-  #     - /config/nginx-config/letsencrypt:/etc/letsencrypt
-  #   environment:
-  #     - TZ=${TIMEZONE}
-  #     - PUID=${PUID_NGINX}
-  #     - PGID=${PGID}
-
   gluetun:
     # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
     image: ghcr.io/qdm12/gluetun:v3
@@ -69,10 +52,10 @@ services:
       - /data/torrents:/data/torrents
       - /data:/data
     # ports:
-      #  Cannot be exposed if using network_mode  
-      # - "8080:8080"
-      # - "6881:6881"
-      # - "6881:6881/udp"
+    #  Cannot be exposed if using network_mode
+    # - "8080:8080"
+    # - "6881:6881"
+    # - "6881:6881/udp"
     restart: unless-stopped
 
   qbittorrent-natmap:
@@ -130,35 +113,35 @@ services:
       - "7878:7878"
     restart: unless-stopped
 
-  readarr-ebooks:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr_ebooks
-    environment:
-      - PUID=${PUID_READARR}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
-      - UMASK=002
-    volumes:
-      - /config/readarr-config:/config
-      - /data:/data
-    ports:
-      - "8787:8787"
-    restart: unless-stopped
+  # readarr-ebooks:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr_ebooks
+  #   environment:
+  #     - PUID=${PUID_READARR}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - UMASK=002
+  #   volumes:
+  #     - /config/readarr-config:/config
+  #     - /data:/data
+  #   ports:
+  #     - "8787:8787"
+  #   restart: unless-stopped
 
-  readarr-audiobooks:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr_audiobooks
-    environment:
-      - PUID=${PUID_READARR_AUDIOBOOKS}
-      - PGID=${PGID}
-      - TZ=${TIMEZONE}
-      - UMASK=002
-    volumes:
-      - /config/readarr-audiobooks-config:/config
-      - /data:/data
-    ports:
-      - "8788:8787"
-    restart: unless-stopped
+  # readarr-audiobooks:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr_audiobooks
+  #   environment:
+  #     - PUID=${PUID_READARR_AUDIOBOOKS}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - UMASK=002
+  #   volumes:
+  #     - /config/readarr-audiobooks-config:/config
+  #     - /data:/data
+  #   ports:
+  #     - "8788:8787"
+  #   restart: unless-stopped
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -177,8 +160,6 @@ services:
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest
     container_name: tautulli
-    # depends_on:
-    # - plex
     environment:
       - PUID=${PUID_TAUTULLI}
       - PGID=${PGID}
@@ -187,7 +168,7 @@ services:
       - /config/tautulli-config:/config
     ports:
       - "8181:8181"
-    restart: unless-stopped 
+    restart: unless-stopped
 
   overseerr:
     image: sctx/overseerr:latest
@@ -233,7 +214,7 @@ services:
       - PUID=${PUID_TDARR}
       - PGID=${PGID}
       - UMASK_SET=002
-      - serverIP=0.0.0.0
+      - serverIP=127.0.0.1
       - serverPort=8266
       - webUIPort=8265
       - internalNode=true
@@ -266,35 +247,35 @@ services:
       - /data/media:/media
       - /transcode_cache:/temp
 
-  ersatztv:
-    container_name: ersatztv
-    image: jasongdove/ersatztv:latest-arm64
-    restart: unless-stopped
-    environment:
-      - TZ=${TIMEZONE}
-      - PUID=${PUID_ERSATZTV}
-      - PGID=${PGID}
-    ports:
-      - "8409:8409/tcp"
-    volumes:
-      - /config/ersatztv-config:/root/.local/share/ersatztv
-      - /data:/data:ro
+  # ersatztv:
+  #   container_name: ersatztv
+  #   image: jasongdove/ersatztv:latest-arm64
+  #   restart: unless-stopped
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #     - PUID=${PUID_ERSATZTV}
+  #     - PGID=${PGID}
+  #   ports:
+  #     - "8409:8409/tcp"
+  #   volumes:
+  #     - /config/ersatztv-config:/root/.local/share/ersatztv
+  #     - /data:/data:ro
 
-  audiobookshelf:
-    container_name: audiobookshelf
-    image: ghcr.io/advplyr/audiobookshelf:latest
-    restart: unless-stopped
-    environment:
-      - TZ=${TIMEZONE}
-      - PUID=${PUID_AUDIOBOOKSHELF}
-      - PGID=${PGID}
-    ports:
-      - 13378:80
-    volumes:
-      - /data/audiobooks:/audiobooks
-      - /data/podcasts:/podcasts
-      - /config/audiobookshelf-config:/config
-      - /data/metadata:/metadata
+  # audiobookshelf:
+  #   container_name: audiobookshelf
+  #   image: ghcr.io/advplyr/audiobookshelf:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #     - PUID=${PUID_AUDIOBOOKSHELF}
+  #     - PGID=${PGID}
+  #   ports:
+  #     - 13378:80
+  #   volumes:
+  #     - /data/audiobooks:/audiobooks
+  #     - /data/podcasts:/podcasts
+  #     - /config/audiobookshelf-config:/config
+  #     - /data/metadata:/metadata
 
   # epicgames-freegames:
   #   container_name: epicgames-freegames
@@ -309,7 +290,7 @@ services:
   #   shm_size: '2g'
   #   volumes:
   #     - /config/epicgames-config/:/usr/app/config
-    
+
   # recyclarr:
   #   container_name: recyclarr
   #   image: ghcr.io/recyclarr/recyclarr
