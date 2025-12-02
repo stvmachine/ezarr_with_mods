@@ -1,0 +1,29 @@
+---
+description: Codebase structure and organization guidelines
+alwaysApply: true
+---
+# Codebase Structure
+
+## Project Overview
+
+This is a Docker Compose-based media server stack (Servarr suite) with Python helper scripts.
+
+## File Organization
+
+- Python scripts belong in the `scripts/` directory
+- Configuration files (docker-compose.yml) stay in root
+- Keep documentation (README.md) up to date with service changes
+- Use consistent naming conventions across the project
+
+## Directory Structure
+
+```
+ezarr/
+├── .cursor/
+│   └── rules/          # Cursor rule files
+├── scripts/             # Python helper scripts
+├── docker-compose.yml   # Docker Compose configuration
+├── setup.sh            # Setup script
+├── README.md           # Project documentation
+└── .env                # Environment variables (not committed)
+```

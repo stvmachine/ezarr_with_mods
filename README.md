@@ -60,6 +60,99 @@ process. Please take a look at [important notes](#important-notes) before you co
 That's it! Your containers are now up and you can continue to set up the settings in them. Please
 take a look at [important notes](#important-notes) before you continue.
 
+## Update Docker Compose Containers
+
+To update your containers to the latest images:
+
+1. Pull latest images:
+
+```bash
+docker compose pull
+```
+
+2. Then restart containers:
+
+```bash
+docker compose up -d --remove-orphans
+```
+
+3. Optionally, remove obsolete images:
+
+```bash
+docker image prune
+```
+
+## Get IP Address
+
+To get your server's IP address:
+
+```bash
+ifconfig | grep "inet " | grep -v 127.0.0.1
+```
+
+## Services Documentation
+
+This stack includes the following services:
+
+### Active Services
+
+- **gluetun** (VPN)
+  - Port: 8080 (for qBittorrent)
+  - VPN service provider wrapper that routes traffic through a VPN. Used by qBittorrent and qbittorrent-natmap.
+
+- **qbittorrent** (Torrent Client)
+  - Port: 8080 (via gluetun)
+  - BitTorrent client with web UI. Downloads torrents found by the *arr services.
+
+- **qbittorrent-natmap** (NAT Mapping)
+  - No exposed ports (uses gluetun network)
+  - Automatically maps NAT ports for qBittorrent to improve connectivity.
+
+- **sonarr** (TV Shows)
+  - Port: 8989
+  - Manages TV show collection, monitors for new episodes, and organizes downloads.
+
+- **radarr** (Movies)
+  - Port: 7878
+  - Manages movie collection, monitors for releases, and organizes downloads.
+
+- **prowlarr** (Indexer Manager)
+  - Port: 9696
+  - Manages indexers (torrent/usenet trackers) and syncs them with Sonarr, Radarr, and other *arr services.
+
+- **tautulli** (Plex Monitoring)
+  - Port: 8181
+  - Monitors Plex media server activity, tracks what's being watched, and provides analytics.
+
+- **overseerr** (Media Requests)
+  - Port: 5055
+  - Media request management and discovery tool. Allows users to request movies and TV shows.
+
+- **bazarr** (Subtitles)
+  - Port: 6767
+  - Manages and downloads subtitles for movies and TV shows in your collection.
+
+- **tdarr** (Media Transcoding)
+  - Ports: 8265 (webUI), 8266 (server), 8267 (internal node)
+  - Distributed transcoding system for optimizing media files. Includes server and node components.
+
+- **tdarr-node** (Transcoding Node)
+  - No exposed ports (uses tdarr network)
+  - Worker node for tdarr that performs the actual transcoding tasks.
+
+### Commented Out Services
+
+The following services are available in docker-compose.yml but are commented out by default:
+
+- **readarr-ebooks** (Books - Ebooks instance)
+- **readarr-audiobooks** (Books - Audiobooks instance)
+- **ersatztv** (Live TV/DVR)
+- **audiobookshelf** (Audiobook Server)
+- **epicgames-freegames** (Epic Games Free Games)
+- **recyclarr** (Quality Profile Sync)
+
+To enable any of these services, uncomment their configuration in `docker-compose.yml`.
+
 ## Important notes
 
 - When linking one service to another, remember to use the container name instead of `localhost`.
