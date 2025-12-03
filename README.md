@@ -1,22 +1,15 @@
-# EZARR
+# My Plex container
 
 [![Check running](https://github.com/Luctia/ezarr/actions/workflows/check_running.yml/badge.svg)](https://github.com/Luctia/ezarr/actions/workflows/check_running.yml)
 
-Ezarr is a project built to make it EZ to deploy a Servarr mediacenter on an Ubuntu server. The
-badge above means that the shell script and docker-compose file in this repository at least *don't
-crash*. It doesn't necessarily mean it will run well on your system ;) It features:
+This repository
 
 - [Sonarr](https://sonarr.tv/) is an application to manage TV shows. It is capable of keeping track
   of what you'd like to watch, at what quality, in which language and more, and can find a place to
   download this if connected to Prowlarr and qBittorrent. It can also reorganize the media you
   already own in order to create a more uniformly formatted collection.
 - [Radarr](https://radarr.video/) is like Sonarr, but for movies.
-- [Lidarr](https://lidarr.audio/) is like Sonarr, but for music.
 - [Readarr](https://readarr.com/) is like Sonarr, but for books.
-- [Mylar3](https://github.com/mylar3/mylar3) is like Sonarr, but for comic books. This one is a bit
-  tricky to set up, so do so at your own risk. In order to connect this to your Prowlarr container,
-  the process within Prowlarr is the same as for the other containers (add app). You'll have to add
-  an API key within Mylar3, yourself.
 - [Audiobookshelf](https://www.audiobookshelf.org/) is a self-hosted audiobook and podcast server.
 - [Prowlarr](https://wiki.servarr.com/prowlarr) can keep track of indexers, which are services that
   keep track of Torrent or UseNet links. One can search an indexer for certain content and find a
@@ -30,20 +23,10 @@ crash*. It doesn't necessarily mean it will run well on your system ;) It featur
   some features, you need a [PleX pass](https://www.plex.tv/nl/plex-pass/).
 - [Tautulli](https://tautulli.com/) is a monitoring application for PleX  which can keep track of
   what has been watched, who watched it, when and where they watched it, and how it was watched.
-- [Jellyfin](https://jellyfin.org/) is an alternative for PleX. Which you'd like to use is a matter
-  of preference, and you *could* even use both, although this is probably a waste of resources.
 - [Overseerr](https://overseerr.dev/) is a show and movie request management and media discovery
    tool.
 
-## Using
-
-### Using the CLI
-
-To make things easier, a CLI has been developed. First, clone the repository in a directory of your
-choosing. You can run it by entering `python main.py` and the CLI will guide you through the
-process. Please take a look at [important notes](#important-notes) before you continue.
-
-### Manually
+## Setup
 
 1. To get started, clone the repository in a directory of your choosing. **Note: this will be where
    your installation and media will be as well, so think about this a bit.**
@@ -52,9 +35,8 @@ process. Please take a look at [important notes](#important-notes) before you co
    have cloned this in.
 4. Run `setup.sh` as superuser. This will set up your users, a system of directories, ensure
    permissions are set correctly and sets some more environment variables for docker compose.
-5. Take a look at the `docker-compose.yml` file. If there are services you would like to ignore
-   (for example, running PleX and Jellyfin at the same time is a bit unusual), you can comment them
-   out by placing `#` in front of the lines. This ensures they are ignored by Docker compose.
+5. Take a look at the `docker-compose.yml` file. If there are services you would like to ignore,
+   you can comment them out by placing `#` in front of the lines. This ensures they are ignored by Docker compose.
 6. Run `docker compose up`.
 
 That's it! Your containers are now up and you can continue to set up the settings in them. Please
@@ -66,15 +48,15 @@ To update your containers to the latest images:
 
 1. Pull latest images:
 
-```bash
-docker compose pull
-```
+   ```bash
+   docker compose pull
+   ```
 
 2. Then restart containers:
 
-```bash
-docker compose up -d --remove-orphans
-```
+   ```bash
+   docker compose up -d --remove-orphans
+   ```
 
 3. Optionally, remove obsolete images:
 
@@ -122,20 +104,15 @@ This stack includes the following services:
 
 - **plex** (Media Server)
   - Port: 32400 (web), 32469 (DLNA), 1900 (DLNA UDP), 3005 (GDM), 8324 (roku), 32410-32414 (additional ports)
-  - Media server that organizes and streams your media collection. Uses `network_mode: host` for optimal performance.
-
-  **Troubleshooting**:
-  - **For new installations**: Visit <https://www.plex.tv/claim/> to get your claim token (expires in 4 minutes)
-    4. Add `PLEX_CLAIM=your-claim-token-here` to your `.env` file (only needed for new installations)
-    5. Start the container: `docker compose up -d plex`
-    6. Access Plex at `http://localhost:32400/web` or `http://your-server-ip:32400/web`
-    7. Complete the initial setup wizard (if new installation) or verify your libraries are accessible (if migrated)
-  - **Database corruption error**: If you see "database disk image is malformed", the database was likely corrupted during migration:
+  - Media server that organizes and streams your media collection.
+  - **Troubleshooting**:
+    - **Database corruption error**: If you see "database disk image is malformed", the database was likely corrupted during migration:
       1. Stop Plex: `docker compose stop plex`
       2. Backup the corrupted database: `cp /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/backups/`
       3. Remove corrupted database files: `rm -f /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db*`
       4. Start Plex: `docker compose up -d plex` (Plex will create a new database)
       5. Re-add your media libraries through the web interface
+    - **Permission issues**: Ensure the Plex config directory has correct ownership matching `PUID_PLEX` and `PGID`
 
 - **tautulli** (Plex Monitoring)
   - Port: 8181
@@ -189,31 +166,16 @@ To enable any of these services, uncomment their configuration in `docker-compos
 ## Important notes
 
 - When linking one service to another, remember to use the container name instead of `localhost`.
-- Please set the settings of the -arr containers as soon as possible to the following (use
+- Please set the settings of the *arr containers as soon as possible to the following (use
   advanced):
   - Media management:
     - Use hardlinks instead of Copy: `true`
     - Root folder: `/data/media/` and then tv, movies or music depending on service
   - Make sure to set a username and password for all servarr services and qBittorrent!
-- In qBittorrent, after connecting it to the -arr services, you can indicate it should move
+- In qBittorrent, after connecting it to the *arr services, you can indicate it should move
   torrents in certain categories to certain directories, like torrents in the `radarr` category
   to `/data/torrents/movies`. You should do this. Also set the `Default Save Path` to
   `/data/torrents`. Set "Run external program on torrent completion" to true and enter this in the
   field: `chmod -R 775 "%F/"`.
 - You'll have to add indexers in Prowlarr by hand. Use Prowlarrs settings to connect it to the
-  other -arr apps.
-
-## FAQ
-
-### Why do I need to set some settings myself, can that be added?
-
-Some settings, particularly for the Servarr suite, are set in databases. While it *might* be
-possible to interact with this database after creation, I'd rather not touch these. It's not
-that difficult to set them yourself, and quite difficult to do it automatically. For other
-containers, configuration files are automatically generated, so these are more easily edited,
-but I currently don't believe this is worth the effort.
-
-On top of the above, connecting the containers above would mean setting a password and creating an
-API key for all of them. This would lead to everyone using Ezarr having the same API key and user/
-password combination. Personally, I'd rather trust users to figure this out on their own rather
-than trusting them to change these passwords and keys.
+  other *arr apps.
