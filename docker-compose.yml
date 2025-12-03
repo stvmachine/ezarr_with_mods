@@ -170,6 +170,33 @@ services:
       - "8181:8181"
     restart: unless-stopped
 
+  plextraktsync:
+    # https://github.com/Taxel/PlexTraktSync
+    image: ghcr.io/taxel/plextraktsync:latest
+    container_name: plextraktsync
+    environment:
+      - PUID=${PUID_PLEXTRAKTSYNC}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/plextraktsync-config:/app/config
+    restart: unless-stopped
+
+  plextraktsync-scheduler:
+    # https://github.com/mcuadros/ofelia - Docker job scheduler
+    image: mcuadros/ofelia:latest
+    container_name: plextraktsync-scheduler
+    depends_on:
+      - plextraktsync
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      ofelia.job-exec.plextraktsync.schedule: "@every 6h"
+      ofelia.job-exec.plextraktsync.container: "plextraktsync"
+      ofelia.job-exec.plextraktsync.command: "plextraktsync sync"
+    restart: unless-stopped
+
   overseerr:
     image: sctx/overseerr:latest
     container_name: overseerr

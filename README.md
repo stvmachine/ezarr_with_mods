@@ -124,6 +124,22 @@ This stack includes the following services:
   - Port: 8181
   - Monitors Plex media server activity, tracks what's being watched, and provides analytics.
 
+- **plextraktsync** (Plex-Trakt Sync)
+  - No exposed ports
+  - Syncs movies, shows, and ratings between Plex and Trakt.tv. Runs scheduled syncs every 6 hours via Ofelia scheduler.
+  - **Setup**:
+    1. Create a Trakt API app at <https://trakt.tv/oauth/applications/new>
+       - Use `urn:ietf:wg:oauth:2.0:oob` as the redirect URL
+       - You can leave JavaScript origins and Permissions checkboxes blank
+    2. Start the container: `docker compose up -d plextraktsync`
+    3. Run the login command: `docker compose exec plextraktsync plextraktsync login`
+       - Follow the prompts to authenticate with both Plex and Trakt
+       - If you have 2FA enabled on Plex, enter the code when prompted
+    4. Configuration files (`.env`, `.pytrakt.json`, `servers.yml`) will be created in `/config/plextraktsync-config`
+    5. After authentication, the scheduler will automatically run syncs every 6 hours
+  - **Scheduler**: Uses Ofelia to run sync jobs automatically. To change the interval, modify the `ofelia.job-exec.plextraktsync.schedule` label in docker-compose.yml (e.g., `@every 12h` for 12 hours).
+  - **Note**: If you cannot run docker commands directly (e.g., on Synology NAS), you can run PlexTraktSync on another device to generate the config files, then copy them to `/config/plextraktsync-config` and rebuild the container.
+
 - **overseerr** (Media Requests)
   - Port: 5055
   - Media request management and discovery tool. Allows users to request movies and TV shows.
