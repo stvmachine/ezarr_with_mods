@@ -123,18 +123,19 @@ This stack includes the following services:
 - **plex** (Media Server)
   - Port: 32400 (web), 32469 (DLNA), 1900 (DLNA UDP), 3005 (GDM), 8324 (roku), 32410-32414 (additional ports)
   - Media server that organizes and streams your media collection. Uses `network_mode: host` for optimal performance.
-  - **Setup**: Before starting Plex, you need to configure environment variables:
-    1. Add `PUID_PLEX=13020` (or your preferred user ID) to your `.env` file
-    2. **If migrating from native Plex installation**: Copy your existing Plex config to the Docker volume:
-       - **macOS**: `cp -r ~/Library/Application\ Support/Plex\ Media\ Server/* /config/plex-config/`
-       - **Linux**: `cp -r /var/lib/plexmediaserver/Library/Application\ Support/Plex\ Media\ Server/* /config/plex-config/`
-       - **Windows**: Copy from `%LOCALAPPDATA%\Plex Media Server\` to your Docker volume mount
-       - If you copy the config, you may not need `PLEX_CLAIM` as the server is already claimed
-    3. **For new installations**: Visit <https://www.plex.tv/claim/> to get your claim token (expires in 4 minutes)
+
+  **Troubleshooting**:
+  - **For new installations**: Visit <https://www.plex.tv/claim/> to get your claim token (expires in 4 minutes)
     4. Add `PLEX_CLAIM=your-claim-token-here` to your `.env` file (only needed for new installations)
     5. Start the container: `docker compose up -d plex`
     6. Access Plex at `http://localhost:32400/web` or `http://your-server-ip:32400/web`
     7. Complete the initial setup wizard (if new installation) or verify your libraries are accessible (if migrated)
+  - **Database corruption error**: If you see "database disk image is malformed", the database was likely corrupted during migration:
+      1. Stop Plex: `docker compose stop plex`
+      2. Backup the corrupted database: `cp /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/backups/`
+      3. Remove corrupted database files: `rm -f /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db*`
+      4. Start Plex: `docker compose up -d plex` (Plex will create a new database)
+      5. Re-add your media libraries through the web interface
 
 - **tautulli** (Plex Monitoring)
   - Port: 8181
