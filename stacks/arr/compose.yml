@@ -1,0 +1,106 @@
+---
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=${PUID_SONARR}
+      - PGID=${PGID}
+      - UMASK=002
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/sonarr-config:/config
+      - /data:/data
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=${PUID_RADARR}
+      - PGID=${PGID}
+      - UMASK=002
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/radarr-config:/config
+      - /data:/data
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=${PUID_PROWLARR}
+      - PGID=${PGID}
+      - UMASK=002
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/prowlarr-config:/config
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+  # ersatztv:
+  #   container_name: ersatztv
+  #   image: jasongdove/ersatztv:latest-arm64
+  #   restart: unless-stopped
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #     - PUID=${PUID_ERSATZTV}
+  #     - PGID=${PGID}
+  #   ports:
+  #     - "8409:8409/tcp"
+  #   volumes:
+  #     - /config/ersatztv-config:/root/.local/share/ersatztv
+  #     - /data:/data:ro
+
+  # readarr-ebooks:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr_ebooks
+  #   environment:
+  #     - PUID=${PUID_READARR}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - UMASK=002
+  #   volumes:
+  #     - /config/readarr-config:/config
+  #     - /data:/data
+  #   ports:
+  #     - "8787:8787"
+  #   restart: unless-stopped
+
+  # readarr-audiobooks:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr_audiobooks
+  #   environment:
+  #     - PUID=${PUID_READARR_AUDIOBOOKS}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - UMASK=002
+  #   volumes:
+  #     - /config/readarr-audiobooks-config:/config
+  #     - /data:/data
+  #   ports:
+  #     - "8788:8787"
+  #   restart: unless-stopped
+
+  # audiobookshelf:
+  #   container_name: audiobookshelf
+  #   image: ghcr.io/advplyr/audiobookshelf:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #     - PUID=${PUID_AUDIOBOOKSHELF}
+  #     - PGID=${PGID}
+  #   ports:
+  #     - 13378:80
+  #   volumes:
+  #     - /data/audiobooks:/audiobooks
+  #     - /data/podcasts:/podcasts
+  #     - /config/audiobookshelf-config:/config
+  #     - /data/metadata:/metadata
+

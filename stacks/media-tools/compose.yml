@@ -1,0 +1,45 @@
+---
+services:
+  overseerr:
+    image: sctx/overseerr:latest
+    container_name: overseerr
+    environment:
+      - PUID=${PUID_OVERSEERR}
+      - PGID=${PGID}
+      - UMASK=002
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/overseerr-config:/app/config
+    ports:
+      - "5055:5055"
+    restart: unless-stopped
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      # TODO: The following mod allows to use subsync that improves the quality of sub synchronization
+      # - DOCKER_MODS=wayller/bazarr-mod-subsync:latest
+      - PUID=${PUID_BAZARR}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/bazarr-config:/config
+      - /data:/data
+    ports:
+      - "6767:6767"
+    restart: unless-stopped
+
+  recyclarr:
+    container_name: recyclarr
+    image: ghcr.io/recyclarr/recyclarr:latest
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "while true; do sleep 3600; done"]
+    volumes:
+      - /config/recyclarr-config:/config
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_RECYCLARR}
+      - PGID=${PGID}
+    restart: unless-stopped
+

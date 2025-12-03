@@ -1,0 +1,65 @@
+---
+services:
+  plex:
+    # https://hub.docker.com/r/linuxserver/plex
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=${PUID_PLEX}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM}
+    volumes:
+      - /config/plex-config:/config
+      - /data/media:/media
+    restart: unless-stopped
+
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    depends_on:
+      - plex
+    environment:
+      - PUID=${PUID_TAUTULLI}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/tautulli-config:/config
+    ports:
+      - "8181:8181"
+    restart: unless-stopped
+
+  plextraktsync:
+    # https://github.com/Taxel/PlexTraktSync
+    image: ghcr.io/taxel/plextraktsync:latest
+    container_name: plextraktsync
+    network_mode: host
+    depends_on:
+      - plex
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "while true; do sleep 3600; done"]
+    environment:
+      - PUID=${PUID_PLEXTRAKTSYNC}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - /config/plextraktsync-config:/app/config
+    restart: unless-stopped
+
+  plextraktsync-scheduler:
+    # https://github.com/mcuadros/ofelia - Docker job scheduler
+    image: mcuadros/ofelia:latest
+    container_name: plextraktsync-scheduler
+    depends_on:
+      - plextraktsync
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      ofelia.job-exec.plextraktsync.schedule: "@every 6h"
+      ofelia.job-exec.plextraktsync.container: "plextraktsync"
+      ofelia.job-exec.plextraktsync.command: "plextraktsync sync"
+    restart: unless-stopped
+

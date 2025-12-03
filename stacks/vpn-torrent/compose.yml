@@ -1,0 +1,85 @@
+---
+services:
+  gluetun:
+    # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
+    image: ghcr.io/qdm12/gluetun:v3
+    container_name: gluetun
+    # line above must be uncommented to allow external containers to connect. See https://github.com/qdm12/gluetun/wiki/Connect-a-container-to-gluetun#external-container-to-gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - /config/gluetun-config:/gluetun
+      - /config/tmp/gluetun:/tmp/gluetun
+    environment:
+      # See https://github.com/qdm12/gluetun/wiki
+      ## ProtonVPN Wireguard
+      - UPDATER_PERIOD=24h
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_PROVIDER=protonvpn
+      - VPN_ENDPOINT_IP=${VPN_ENDPOINT_IP}
+      - VPN_ENDPOINT_PORT=${VPN_ENDPOINT_PORT}
+      - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - TZ=${TIMEZONE}
+      - PUID=${PUID_GLUETUN}
+      - PGID=${PGID}
+    ports:
+      - 8080:8080/tcp # qBittorrent
+    # networks:
+    #   gluetun-network:
+    #     ipv4_address: 172.16.0.10
+
+  qbittorrent:
+    #  https://docs.linuxserver.io/images/docker-qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=${PUID_QBITTORRENT}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - UMASK=002
+      - WEBUI_PORT=8080
+    volumes:
+      - /config/qbittorrent-config:/config
+      - /data/torrents:/data/torrents
+      - /data:/data
+    # ports:
+    #  Cannot be exposed if using network_mode
+    # - "8080:8080"
+    # - "6881:6881"
+    # - "6881:6881/udp"
+    restart: unless-stopped
+
+  qbittorrent-natmap:
+    # https://github.com/soxfor/qbittorrent-natmap
+    image: ghcr.io/soxfor/qbittorrent-natmap:latest
+    container_name: qbittorrent-natmap
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /config/qbittorrent-natmap-config:/config
+      - /config/qbittorrent-natmap-config/certs:/etc/ssl/certs
+    # command: ["/bin/bash", "-c", "/config/qbittorrent-natmap-script.sh"]
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID_QBITTORRENT_NATMAP}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - QBITTORRENT_SERVER=localhost
+      - QBITTORRENT_PORT=8080
+      - QBITTORRENT_USER=admin
+      - QBITTORRENT_PASS=adminadmin
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      gluetun:
+        condition: service_healthy
+

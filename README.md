@@ -35,8 +35,15 @@ This repository
    have cloned this in.
 4. Run `setup.sh` as superuser. This will set up your users, a system of directories, ensure
    permissions are set correctly and sets some more environment variables for docker compose.
-5. Take a look at the `docker-compose.yml` file. If there are services you would like to ignore,
-   you can comment them out by placing `#` in front of the lines. This ensures they are ignored by Docker compose.
+5. The Docker Compose configuration is split into modular files organized by stack:
+   - `docker-compose.yml` - Main file that includes all stack configurations
+   - `stacks/vpn-torrent/compose.yml` - VPN and torrent services (gluetun, qbittorrent, qbittorrent-natmap)
+   - `stacks/arr/compose.yml` - *arr services (sonarr, radarr, prowlarr, and optional services)
+   - `stacks/plex/compose.yml` - Plex and related services (plex, tautulli, plextraktsync, plextraktsync-scheduler)
+   - `stacks/media-tools/compose.yml` - Media management tools (overseerr, bazarr, recyclarr)
+   - `stacks/transcoding/compose.yml` - Transcoding services (tdarr, tdarr-node)
+
+   If you want to disable a service, comment it out in the appropriate stack file, or comment out the entire stack include in `docker-compose.yml`.
 6. Run `docker compose up`.
 
 That's it! Your containers are now up and you can continue to set up the settings in them. Please
@@ -139,15 +146,14 @@ This stack includes the following services:
 
 ### Commented Out Services
 
-The following services are available in docker-compose.yml but are commented out by default:
+The following services are available but are commented out by default in `stacks/arr/compose.yml`:
 
 - **readarr-ebooks** (Books - Ebooks instance)
 - **readarr-audiobooks** (Books - Audiobooks instance)
 - **ersatztv** (Live TV/DVR)
 - **audiobookshelf** (Audiobook Server)
-- **epicgames-freegames** (Epic Games Free Games)
 
-To enable any of these services, uncomment their configuration in `docker-compose.yml`.
+To enable any of these services, uncomment their configuration in `stacks/arr/compose.yml`.
 
 ## Important notes
 
