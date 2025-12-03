@@ -1,6 +1,6 @@
 ---
 description: Enforces the principle of making minimal code changes to avoid introducing bugs or technical debt
-globs: **/*.*
+alwaysApply: true
 ---
 # Minimal Code Changes
 

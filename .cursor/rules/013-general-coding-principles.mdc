@@ -1,6 +1,6 @@
 ---
 description: Applies general coding principles like simplicity, readability, performance, maintainability, testability, and reusability to all files
-globs: **/*.*
+alwaysApply: true
 ---
 # General Coding Principles
 

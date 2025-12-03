@@ -1,6 +1,6 @@
 ---
 description: Specifies the usage of TODO comments to outline problems or bugs encountered in existing code
-globs: **/*.*
+alwaysApply: true
 ---
 # Bug Handling
 
