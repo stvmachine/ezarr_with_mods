@@ -105,14 +105,7 @@ This stack includes the following services:
 - **plex** (Media Server)
   - Port: 32400 (web), 32469 (DLNA), 1900 (DLNA UDP), 3005 (GDM), 8324 (roku), 32410-32414 (additional ports)
   - Media server that organizes and streams your media collection.
-  - **Troubleshooting**:
-    - **Database corruption error**: If you see "database disk image is malformed", the database was likely corrupted during migration:
-      1. Stop Plex: `docker compose stop plex`
-      2. Backup the corrupted database: `cp /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/backups/`
-      3. Remove corrupted database files: `rm -f /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db*`
-      4. Start Plex: `docker compose up -d plex` (Plex will create a new database)
-      5. Re-add your media libraries through the web interface
-    - **Permission issues**: Ensure the Plex config directory has correct ownership matching `PUID_PLEX` and `PGID`
+  - See [Plex Setup Guide](docs/plex.md) for detailed setup and troubleshooting instructions.
 
 - **tautulli** (Plex Monitoring)
   - Port: 8181
@@ -121,18 +114,7 @@ This stack includes the following services:
 - **plextraktsync** (Plex-Trakt Sync)
   - No exposed ports
   - Syncs movies, shows, and ratings between Plex and Trakt.tv. Runs scheduled syncs every 6 hours via Ofelia scheduler.
-  - **Setup**:
-    1. Create a Trakt API app at <https://trakt.tv/oauth/applications/new>
-       - Use `urn:ietf:wg:oauth:2.0:oob` as the redirect URL
-       - You can leave JavaScript origins and Permissions checkboxes blank
-    2. Start the containers: `docker compose up -d plex plextraktsync`
-    3. Run the login command: `docker compose exec -it plextraktsync plextraktsync login`
-       - Follow the prompts to authenticate with both Plex and Trakt
-       - PlexTraktSync will automatically discover your Plex server
-       - If you have 2FA enabled on Plex, enter the code when prompted
-    4. Configuration files (`.env`, `.pytrakt.json`, `servers.yml`) will be created in `/config/plextraktsync-config`
-    5. After authentication, the scheduler will automatically run syncs every 6 hours
-  - **Scheduler**: Uses Ofelia to run sync jobs automatically. To change the interval, modify the `ofelia.job-exec.plextraktsync.schedule` label in docker-compose.yml (e.g., `@every 12h` for 12 hours).
+  - See [Trakt Setup Guide](docs/trakt.md) for detailed setup instructions.
 
 - **overseerr** (Media Requests)
   - Port: 5055
@@ -153,38 +135,7 @@ This stack includes the following services:
 - **recyclarr** (Quality Profile Sync)
   - No exposed ports (CLI tool, no web UI)
   - Automatically synchronizes recommended settings from TRaSH guides to Sonarr and Radarr instances.
-  - **Setup**:
-    1. Start the container: `docker compose up -d recyclarr`
-    2. Generate default configuration file:
-
-       ```bash
-       docker compose exec recyclarr recyclarr config create
-       ```
-
-       This creates `/config/recyclarr-config/recyclarr.yml`
-    3. Get API keys from Sonarr and Radarr:
-       - Sonarr: Settings → General → API Key
-       - Radarr: Settings → General → API Key
-    4. Edit `/config/recyclarr-config/recyclarr.yml` and add your instances:
-
-       ```yaml
-       sonarr:
-         - base_url: http://sonarr:8989
-           api_key: YOUR_SONARR_API_KEY_HERE
-       
-       radarr:
-         - base_url: http://radarr:7878
-           api_key: YOUR_RADARR_API_KEY_HERE
-       ```
-
-    5. Test the configuration:
-
-       ```bash
-       docker compose exec recyclarr recyclarr sync
-       ```
-
-  - **Manual sync**: Run `docker compose exec recyclarr recyclarr sync` anytime to sync manually
-  - **Scheduling**: To run Recyclarr automatically, set up a cron job or use your system's task scheduler to run the sync command periodically.
+  - See [Recyclarr Setup Guide](docs/recyclarr.md) for detailed setup instructions.
 
 ### Commented Out Services
 
