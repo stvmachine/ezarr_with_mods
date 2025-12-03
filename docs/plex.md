@@ -14,6 +14,7 @@ Plex is a media server that organizes and streams your media collection. It prov
 ## Initial Setup
 
 1. Start the Plex container:
+
    ```bash
    docker compose up -d plex
    ```
@@ -40,21 +41,25 @@ The Plex configuration is stored in `/config/plex-config`. Ensure this directory
 If you see "database disk image is malformed", the database was likely corrupted during migration:
 
 1. Stop Plex:
+
    ```bash
    docker compose stop plex
    ```
 
 2. Backup the corrupted database:
+
    ```bash
    cp /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/backups/
    ```
 
 3. Remove corrupted database files:
+
    ```bash
    rm -f /config/plex-config/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db*
    ```
 
 4. Start Plex (it will create a new database):
+
    ```bash
    docker compose up -d plex
    ```
@@ -66,6 +71,7 @@ If you see "database disk image is malformed", the database was likely corrupted
 If Plex cannot access your media files or configuration:
 
 1. Ensure the Plex config directory has correct ownership:
+
    ```bash
    sudo chown -R plex:mediacenter /config/plex-config
    ```
@@ -73,6 +79,7 @@ If Plex cannot access your media files or configuration:
 2. Verify the `PUID_PLEX` and `PGID` environment variables in your `.env` file match the user/group IDs
 
 3. Ensure media directories are accessible:
+
    ```bash
    sudo chmod -R 775 /data/media
    sudo chown -R $(id -u):mediacenter /data/media
@@ -81,6 +88,7 @@ If Plex cannot access your media files or configuration:
 ## Plex Pass
 
 Some features require a [Plex Pass](https://www.plex.tv/nl/plex-pass/), including:
+
 - Hardware-accelerated transcoding
 - Mobile sync
 - Premium music features
@@ -90,4 +98,3 @@ Some features require a [Plex Pass](https://www.plex.tv/nl/plex-pass/), includin
 
 - [Plex Documentation](https://support.plex.tv/)
 - [Plex Forums](https://forums.plex.tv/)
-

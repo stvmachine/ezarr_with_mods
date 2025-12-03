@@ -27,6 +27,7 @@ sudo useradd overseerr -u ${PUID_OVERSEERR:-13008} 2>/dev/null || true
 sudo useradd bazarr -u ${PUID_BAZARR:-13009} 2>/dev/null || true
 sudo useradd tdarr -u ${PUID_TDARR:-13010} 2>/dev/null || true
 sudo useradd tdarr-node -u ${PUID_TDARR_NODE:-13011} 2>/dev/null || true
+sudo useradd recyclarr -u ${PUID_RECYCLARR:-13003} 2>/dev/null || true
 
 # Add users to mediacenter group
 sudo usermod -a -G mediacenter sonarr 2>/dev/null || true
@@ -42,9 +43,10 @@ sudo usermod -a -G mediacenter overseerr 2>/dev/null || true
 sudo usermod -a -G mediacenter bazarr 2>/dev/null || true
 sudo usermod -a -G mediacenter tdarr 2>/dev/null || true
 sudo usermod -a -G mediacenter tdarr-node 2>/dev/null || true
+sudo usermod -a -G mediacenter recyclarr 2>/dev/null || true
 
 # Make directories (using absolute paths as in docker-compose.yml)
-sudo mkdir -pv /config/{gluetun-config,qbittorrent-config,qbittorrent-natmap-config,sonarr-config,radarr-config,prowlarr-config,plex-config,tautulli-config,plextraktsync-config,overseerr-config,bazarr-config,tdarr-server-config,tdarr-client-config}
+sudo mkdir -pv /config/{gluetun-config,qbittorrent-config,qbittorrent-natmap-config,sonarr-config,radarr-config,prowlarr-config,plex-config,tautulli-config,plextraktsync-config,overseerr-config,bazarr-config,tdarr-server-config,tdarr-client-config,recyclarr-config}
 sudo mkdir -pv /config/tmp/gluetun
 sudo mkdir -pv /data/{torrents,media}
 sudo mkdir -pv /transcode_cache
@@ -67,5 +69,6 @@ sudo chown -R overseerr:mediacenter /config/overseerr-config
 sudo chown -R bazarr:mediacenter /config/bazarr-config
 sudo chown -R tdarr:mediacenter /config/tdarr-server-config
 sudo chown -R tdarr-node:mediacenter /config/tdarr-client-config
+sudo chown -R recyclarr:mediacenter /config/recyclarr-config
 
 echo "UID=$(id -u)" >> .env

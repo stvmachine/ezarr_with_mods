@@ -113,36 +113,6 @@ services:
       - "7878:7878"
     restart: unless-stopped
 
-  # readarr-ebooks:
-  #   image: lscr.io/linuxserver/readarr:develop
-  #   container_name: readarr_ebooks
-  #   environment:
-  #     - PUID=${PUID_READARR}
-  #     - PGID=${PGID}
-  #     - TZ=${TIMEZONE}
-  #     - UMASK=002
-  #   volumes:
-  #     - /config/readarr-config:/config
-  #     - /data:/data
-  #   ports:
-  #     - "8787:8787"
-  #   restart: unless-stopped
-
-  # readarr-audiobooks:
-  #   image: lscr.io/linuxserver/readarr:develop
-  #   container_name: readarr_audiobooks
-  #   environment:
-  #     - PUID=${PUID_READARR_AUDIOBOOKS}
-  #     - PGID=${PGID}
-  #     - TZ=${TIMEZONE}
-  #     - UMASK=002
-  #   volumes:
-  #     - /config/readarr-audiobooks-config:/config
-  #     - /data:/data
-  #   ports:
-  #     - "8788:8787"
-  #   restart: unless-stopped
-
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
@@ -311,6 +281,36 @@ services:
   #     - /config/ersatztv-config:/root/.local/share/ersatztv
   #     - /data:/data:ro
 
+  # readarr-ebooks:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr_ebooks
+  #   environment:
+  #     - PUID=${PUID_READARR}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - UMASK=002
+  #   volumes:
+  #     - /config/readarr-config:/config
+  #     - /data:/data
+  #   ports:
+  #     - "8787:8787"
+  #   restart: unless-stopped
+
+  # readarr-audiobooks:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr_audiobooks
+  #   environment:
+  #     - PUID=${PUID_READARR_AUDIOBOOKS}
+  #     - PGID=${PGID}
+  #     - TZ=${TIMEZONE}
+  #     - UMASK=002
+  #   volumes:
+  #     - /config/readarr-audiobooks-config:/config
+  #     - /data:/data
+  #   ports:
+  #     - "8788:8787"
+  #   restart: unless-stopped
+
   # audiobookshelf:
   #   container_name: audiobookshelf
   #   image: ghcr.io/advplyr/audiobookshelf:latest
@@ -327,26 +327,15 @@ services:
   #     - /config/audiobookshelf-config:/config
   #     - /data/metadata:/metadata
 
-  # epicgames-freegames:
-  #   container_name: epicgames-freegames
-  #   image: charlocharlie/epicgames-freegames:latest
-  #   restart: unless-stopped
-  #   environment:
-  #     - TZ=${TIMEZONE}
-  #     - PUID=${PUID_EPICGAMES}
-  #     - PGID=${PGID}
-  #   ports:
-  #     - 8500:3000
-  #   shm_size: '2g'
-  #   volumes:
-  #     - /config/epicgames-config/:/usr/app/config
-
   # recyclarr:
   #   container_name: recyclarr
-  #   image: ghcr.io/recyclarr/recyclarr
+  #   image: ghcr.io/recyclarr/recyclarr:latest
+  #   entrypoint: ["/bin/sh"]
+  #   command: ["-c", "while true; do sleep 3600; done"]
   #   volumes:
   #     - /config/recyclarr-config:/config
   #   environment:
   #     - TZ=${TIMEZONE}
   #     - PUID=${PUID_RECYCLARR}
   #     - PGID=${PGID}
+  #   restart: unless-stopped
