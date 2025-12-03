@@ -150,6 +150,42 @@ This stack includes the following services:
   - No exposed ports (uses tdarr network)
   - Worker node for tdarr that performs the actual transcoding tasks.
 
+- **recyclarr** (Quality Profile Sync)
+  - No exposed ports (CLI tool, no web UI)
+  - Automatically synchronizes recommended settings from TRaSH guides to Sonarr and Radarr instances.
+  - **Setup**:
+    1. Start the container: `docker compose up -d recyclarr`
+    2. Generate default configuration file:
+
+       ```bash
+       docker compose exec recyclarr recyclarr config create
+       ```
+
+       This creates `/config/recyclarr-config/recyclarr.yml`
+    3. Get API keys from Sonarr and Radarr:
+       - Sonarr: Settings → General → API Key
+       - Radarr: Settings → General → API Key
+    4. Edit `/config/recyclarr-config/recyclarr.yml` and add your instances:
+
+       ```yaml
+       sonarr:
+         - base_url: http://sonarr:8989
+           api_key: YOUR_SONARR_API_KEY_HERE
+       
+       radarr:
+         - base_url: http://radarr:7878
+           api_key: YOUR_RADARR_API_KEY_HERE
+       ```
+
+    5. Test the configuration:
+
+       ```bash
+       docker compose exec recyclarr recyclarr sync
+       ```
+
+  - **Manual sync**: Run `docker compose exec recyclarr recyclarr sync` anytime to sync manually
+  - **Scheduling**: To run Recyclarr automatically, set up a cron job or use your system's task scheduler to run the sync command periodically.
+
 ### Commented Out Services
 
 The following services are available in docker-compose.yml but are commented out by default:
@@ -159,7 +195,6 @@ The following services are available in docker-compose.yml but are commented out
 - **ersatztv** (Live TV/DVR)
 - **audiobookshelf** (Audiobook Server)
 - **epicgames-freegames** (Epic Games Free Games)
-- **recyclarr** (Quality Profile Sync)
 
 To enable any of these services, uncomment their configuration in `docker-compose.yml`.
 
