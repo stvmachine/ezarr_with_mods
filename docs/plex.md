@@ -2,15 +2,6 @@
 
 Plex is a media server that organizes and streams your media collection. It provides a Netflix-like interface across many devices like your laptop, computer, phone, and TV.
 
-## Ports
-
-- **32400** - Web interface
-- **32469** - DLNA
-- **1900** - DLNA UDP
-- **3005** - GDM
-- **8324** - Roku
-- **32410-32414** - Additional ports
-
 ## Initial Setup
 
 1. Start the Plex container:
@@ -84,15 +75,6 @@ If Plex cannot access your media files or configuration:
    sudo chmod -R 775 /data/media
    sudo chown -R $(id -u):mediacenter /data/media
    ```
-
-## Plex Pass
-
-Some features require a [Plex Pass](https://www.plex.tv/nl/plex-pass/), including:
-
-- Hardware-accelerated transcoding
-- Mobile sync
-- Premium music features
-- Early access to new features
 
 ## Additional Resources
 
