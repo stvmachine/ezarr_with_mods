@@ -120,6 +120,22 @@ This stack includes the following services:
   - Port: 9696
   - Manages indexers (torrent/usenet trackers) and syncs them with Sonarr, Radarr, and other *arr services.
 
+- **plex** (Media Server)
+  - Port: 32400 (web), 32469 (DLNA), 1900 (DLNA UDP), 3005 (GDM), 8324 (roku), 32410-32414 (additional ports)
+  - Media server that organizes and streams your media collection. Uses `network_mode: host` for optimal performance.
+  - **Setup**: Before starting Plex, you need to configure environment variables:
+    1. Add `PUID_PLEX=13020` (or your preferred user ID) to your `.env` file
+    2. **If migrating from native Plex installation**: Copy your existing Plex config to the Docker volume:
+       - **macOS**: `cp -r ~/Library/Application\ Support/Plex\ Media\ Server/* /config/plex-config/`
+       - **Linux**: `cp -r /var/lib/plexmediaserver/Library/Application\ Support/Plex\ Media\ Server/* /config/plex-config/`
+       - **Windows**: Copy from `%LOCALAPPDATA%\Plex Media Server\` to your Docker volume mount
+       - If you copy the config, you may not need `PLEX_CLAIM` as the server is already claimed
+    3. **For new installations**: Visit <https://www.plex.tv/claim/> to get your claim token (expires in 4 minutes)
+    4. Add `PLEX_CLAIM=your-claim-token-here` to your `.env` file (only needed for new installations)
+    5. Start the container: `docker compose up -d plex`
+    6. Access Plex at `http://localhost:32400/web` or `http://your-server-ip:32400/web`
+    7. Complete the initial setup wizard (if new installation) or verify your libraries are accessible (if migrated)
+
 - **tautulli** (Plex Monitoring)
   - Port: 8181
   - Monitors Plex media server activity, tracks what's being watched, and provides analytics.
@@ -131,14 +147,14 @@ This stack includes the following services:
     1. Create a Trakt API app at <https://trakt.tv/oauth/applications/new>
        - Use `urn:ietf:wg:oauth:2.0:oob` as the redirect URL
        - You can leave JavaScript origins and Permissions checkboxes blank
-    2. Start the container: `docker compose up -d plextraktsync`
-    3. Run the login command: `docker compose exec plextraktsync plextraktsync login`
+    2. Start the containers: `docker compose up -d plex plextraktsync`
+    3. Run the login command: `docker compose exec -it plextraktsync plextraktsync login`
        - Follow the prompts to authenticate with both Plex and Trakt
+       - PlexTraktSync will automatically discover your Plex server
        - If you have 2FA enabled on Plex, enter the code when prompted
     4. Configuration files (`.env`, `.pytrakt.json`, `servers.yml`) will be created in `/config/plextraktsync-config`
     5. After authentication, the scheduler will automatically run syncs every 6 hours
   - **Scheduler**: Uses Ofelia to run sync jobs automatically. To change the interval, modify the `ofelia.job-exec.plextraktsync.schedule` label in docker-compose.yml (e.g., `@every 12h` for 12 hours).
-  - **Note**: If you cannot run docker commands directly (e.g., on Synology NAS), you can run PlexTraktSync on another device to generate the config files, then copy them to `/config/plextraktsync-config` and rebuild the container.
 
 - **overseerr** (Media Requests)
   - Port: 5055
